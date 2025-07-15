@@ -1,0 +1,40 @@
+pragma solidity ^0.8.0;
+
+contract CESRegistry {
+    struct CESRecord {
+        string fingerprint;
+        address signer;
+        string signatureHex;
+        uint256 timestamp;
+    }
+
+    mapping(string => CESRecord) public cesRecords;
+
+    event CESStored(string fingerprint, address signer, uint256 timestamp);
+
+    function storeCES(
+        string memory fingerprint,
+        string memory signatureHex
+    ) public {
+        require(bytes(fingerprint).length > 0, "Invalid fingerprint");
+
+        CESRecord memory record = CESRecord({
+            fingerprint: fingerprint,
+            signer: msg.sender,
+            signatureHex: signatureHex,
+            timestamp: block.timestamp
+        });
+
+        cesRecords[fingerprint] = record;
+        emit CESStored(fingerprint, msg.sender, block.timestamp);
+    }
+
+    function getCES(string memory fingerprint) public view returns (
+        address signer,
+        string memory signatureHex,
+        uint256 timestamp
+    ) {
+        CESRecord memory record = cesRecords[fingerprint];
+        return (record.signer, record.signatureHex, record.timestamp);
+    }
+}
